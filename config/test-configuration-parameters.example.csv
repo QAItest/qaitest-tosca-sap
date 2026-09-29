@@ -1,0 +1,8 @@
+Name,ExampleValue,Secret,Scope,Description
+SAP_CONNECTION,SAP_QA,false,ExecutionList,SAP Logon connection name
+SAP_CLIENT,100,false,ExecutionList,SAP client number
+SAP_LANGUAGE,EN,false,ExecutionList,SAP logon language
+SAP_USERNAME,technical-user,false,ExecutionList,Non-production technical user
+SAP_PASSWORD,{SECRET[kv/sap/qa][password]},true,ExecutionList,Key-vault expression only
+SAP_FIORI_URL,https://fiori.example.test/sap/bc/ui2/flp,false,ExecutionList,Fiori Launchpad base URL
+SAP_LOGOUT_TEXT,Sign Out,false,ExecutionList,Localized Fiori logout action

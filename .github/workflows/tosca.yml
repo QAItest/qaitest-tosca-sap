@@ -1,0 +1,46 @@
+name: tosca-sap
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      execute_tests:
+        description: Run Tosca tests on the self-hosted agent
+        required: true
+        default: false
+        type: boolean
+      mode:
+        description: Tosca CI execution mode
+        required: true
+        default: distributed
+        type: choice
+        options: [distributed, local]
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate template
+        shell: pwsh
+        run: ./scripts/Test-Template.ps1
+
+  execute:
+    if: github.event_name == 'workflow_dispatch' && inputs.execute_tests
+    needs: validate
+    runs-on: [self-hosted, windows, tosca, sap]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Tosca SAP tests
+        shell: pwsh
+        env:
+          TOSCA_CI_CLIENT_PATH: ${{ vars.TOSCA_CI_CLIENT_PATH }}
+          TOSCA_EXECUTION_ENDPOINT: ${{ secrets.TOSCA_EXECUTION_ENDPOINT }}
+        run: ./scripts/Invoke-ToscaTests.ps1 -Mode '${{ inputs.mode }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tosca-sap-results
+          path: reports/

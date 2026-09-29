@@ -1,0 +1,3 @@
+Environment,SAPConnection,SAPClient,SAPLanguage,FioriUrl
+QA,SAP_QA,100,EN,https://fiori.example.test/sap/bc/ui2/flp
+UAT,SAP_UAT,200,EN,https://fiori-uat.example.test/sap/bc/ui2/flp

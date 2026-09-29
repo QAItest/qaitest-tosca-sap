@@ -1,0 +1,9 @@
+Order,TestCase,Module,Control,ActionMode,Value,ExpectedResult
+10,SAP-FIORI-001 Login and logout,Open URL,Url,Input,{CP[SAP_FIORI_URL]},Fiori Launchpad login page opens
+20,SAP-FIORI-001 Login and logout,Fiori Login,User,Input,{CP[SAP_USERNAME]},User is entered
+30,SAP-FIORI-001 Login and logout,Fiori Login,Password,Input,{CP[SAP_PASSWORD]},Password is entered securely
+40,SAP-FIORI-001 Login and logout,Fiori Login,Log On,Input,{CLICK},Authentication is submitted
+50,SAP-FIORI-001 Login and logout,Fiori Launchpad,Shell,Verify,*,Launchpad shell is visible
+60,SAP-FIORI-001 Login and logout,Fiori Launchpad,User Menu,Input,{CLICK},User menu opens
+70,SAP-FIORI-001 Login and logout,Fiori Launchpad,Logout,Input,{CLICK},Localized logout action is selected
+80,SAP-FIORI-001 Login and logout,Fiori Login,User,Verify,*,Login page is displayed

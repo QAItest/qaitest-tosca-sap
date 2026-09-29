@@ -1,0 +1,23 @@
+# Tosca local workspace and caches
+*.tws
+*.twsx
+*.db
+*.sqlite
+*.bak
+
+# Generated execution output
+reports/*
+!reports/.gitkeep
+*.trx
+*.log
+
+# Local configuration and secrets
+.env
+*.local.csv
+secrets/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

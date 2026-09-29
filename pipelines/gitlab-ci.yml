@@ -1,0 +1,20 @@
+stages: [validate, test]
+
+validate-template:
+  stage: validate
+  tags: [windows]
+  script:
+    - pwsh -File scripts/Test-Template.ps1
+
+tosca-sap-tests:
+  stage: test
+  tags: [windows, tosca, sap]
+  when: manual
+  script:
+    - pwsh -File scripts/Invoke-ToscaTests.ps1 -Mode distributed
+  artifacts:
+    when: always
+    reports:
+      junit: reports/tosca-results.xml
+    paths:
+      - reports/

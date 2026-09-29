@@ -1,0 +1,27 @@
+pipeline {
+  agent none
+
+  stages {
+    stage('Validate') {
+      agent { label 'windows' }
+      steps {
+        checkout scm
+        powershell './scripts/Test-Template.ps1'
+      }
+    }
+
+    stage('Run Tosca SAP tests') {
+      agent { label 'windows && tosca && sap' }
+      steps {
+        checkout scm
+        powershell './scripts/Invoke-ToscaTests.ps1 -Mode distributed'
+      }
+      post {
+        always {
+          junit allowEmptyResults: true, testResults: 'reports/tosca-results.xml'
+          archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/**/*'
+        }
+      }
+    }
+  }
+}

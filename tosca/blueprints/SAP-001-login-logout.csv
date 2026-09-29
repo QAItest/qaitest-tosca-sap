@@ -1,0 +1,11 @@
+Order,TestCase,Module,Control,ActionMode,Value,ExpectedResult
+10,SAP-001 Login and logout,SAP Logon,Connection,Input,{CP[SAP_CONNECTION]},Target SAP connection opens
+20,SAP-001 Login and logout,SAP Login,Client,Input,{CP[SAP_CLIENT]},Client is entered
+30,SAP-001 Login and logout,SAP Login,User,Input,{CP[SAP_USERNAME]},User is entered
+40,SAP-001 Login and logout,SAP Login,Password,Input,{CP[SAP_PASSWORD]},Password is entered securely
+50,SAP-001 Login and logout,SAP Login,Language,Input,{CP[SAP_LANGUAGE]},Language is entered
+60,SAP-001 Login and logout,SAP Login,Log On,Input,{CLICK},Authentication is submitted
+70,SAP-001 Login and logout,SAP Easy Access,Title,Verify,*,SAP home screen is visible
+80,SAP-001 Login and logout,SAP System Menu,Log Off,Input,{CLICK},Logout is requested
+90,SAP-001 Login and logout,SAP Logoff Confirmation,Yes,Input,{CLICK},Logout is confirmed
+100,SAP-001 Login and logout,SAP Login,User,Verify,*,Login screen is displayed
