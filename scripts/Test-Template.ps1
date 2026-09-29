@@ -73,6 +73,36 @@ foreach ($file in $trackedTextFiles) {
     }
 }
 
+$temporaryDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "qaitest-tosca-xray-$([guid]::NewGuid())"
+try {
+    New-Item -ItemType Directory -Path $temporaryDirectory -Force | Out-Null
+    $fixture = Join-Path $repositoryRoot "tests/fixtures/tosca-results.xml"
+    $temporaryReport = Join-Path $temporaryDirectory "tosca-results.xml"
+    Copy-Item -LiteralPath $fixture -Destination $temporaryReport
+
+    & (Join-Path $PSScriptRoot "Publish-XrayResults.ps1") `
+        -ResultPath $temporaryReport `
+        -ProjectKey "SAP" `
+        -DryRun
+    & (Join-Path $PSScriptRoot "Export-XrayFeatures.ps1") -Keys "SAP-001" -DryRun
+    & (Join-Path $PSScriptRoot "Import-XrayFeatures.ps1") `
+        -InputPath (Join-Path $repositoryRoot "features") `
+        -ProjectKey "SAP" `
+        -DryRun
+
+    [xml]$enrichedReport = Get-Content -LiteralPath (Join-Path $temporaryDirectory "xray-tosca-results.xml") -Raw
+    $mappedKey = $enrichedReport.SelectSingleNode("//*[local-name()='property' and @name='test_key']")
+    if (-not $mappedKey -or $mappedKey.value -ne "SAP-001") {
+        Add-Failure "Tosca JUnit to Xray test_key conversion failed."
+    }
+} catch {
+    Add-Failure "Xray integration validation failed: $($_.Exception.Message)"
+} finally {
+    if (Test-Path -LiteralPath $temporaryDirectory) {
+        Remove-Item -LiteralPath $temporaryDirectory -Recurse -Force
+    }
+}
+
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ }
     exit 1

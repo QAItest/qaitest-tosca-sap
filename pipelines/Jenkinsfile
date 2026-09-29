@@ -18,6 +18,11 @@ pipeline {
       }
       post {
         always {
+          powershell '''
+            if ($env:XRAY_CLIENT_ID -and $env:XRAY_CLIENT_SECRET -and $env:XRAY_PROJECT_KEY -and (Test-Path reports/tosca-results.xml)) {
+              ./scripts/Publish-XrayResults.ps1
+            }
+          '''
           junit allowEmptyResults: true, testResults: 'reports/tosca-results.xml'
           archiveArtifacts allowEmptyArchive: true, artifacts: 'reports/**/*'
         }

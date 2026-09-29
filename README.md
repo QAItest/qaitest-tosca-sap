@@ -12,6 +12,7 @@ software, SAP application, internal endpoint, or credential.
 - SAP GUI and Fiori module design guidance
 - environment and Test Configuration Parameter examples
 - a Tosca CI execution filter and PowerShell runner
+- Xray Cloud feature synchronization and JUnit result publication
 - validation that runs without a Tosca license
 - GitHub Actions, GitLab CI, and Jenkins examples
 - folders for versioned `.tce` or `.tsu` subsets and JUnit results
@@ -28,6 +29,7 @@ qaitest-tosca-sap/
 |-- pipelines/               GitLab and Jenkins examples
 |-- reports/                 generated JUnit results
 |-- scripts/                 validation and Tosca CI launcher
+|-- tests/                   integration-test fixtures
 `-- tosca/
     |-- blueprints/          reviewable TestCase step definitions
     `-- subsets/             exported Tosca subsets
@@ -99,6 +101,52 @@ Tosca CI Client is marked as a legacy feature in current Tricentis documentation
 that dependency isolated so it can be replaced by the execution service adopted by your Tosca
 installation.
 
+## Xray for Jira integration
+
+The integration targets Xray Cloud REST API v2 and keeps credentials in environment variables or CI
+secret stores.
+
+Export Cucumber scenarios from existing Xray Test issues:
+
+```powershell
+$env:XRAY_CLIENT_ID = "..."
+$env:XRAY_CLIENT_SECRET = "..."
+pwsh -File scripts/Export-XrayFeatures.ps1 -Keys SAP-001,SAP-002
+```
+
+Synchronize the repository's feature definitions back to Xray:
+
+```powershell
+$env:XRAY_PROJECT_KEY = "SAP"
+pwsh -File scripts/Import-XrayFeatures.ps1 -InputPath features
+```
+
+Publish the JUnit report created by Tosca CI Client:
+
+```powershell
+$env:XRAY_PROJECT_KEY = "SAP"
+pwsh -File scripts/Publish-XrayResults.ps1
+```
+
+Before upload, `Convert-ToscaJUnitForXray.ps1` extracts Jira keys such as `SAP-001` from Tosca
+TestCase names and adds Xray's `test_key` property. Name Tosca TestCases with the issue key in square
+brackets, for example `[SAP-001] Login and logout`, to map results to existing Xray Tests.
+
+Optional variables associate the run with existing Xray entities:
+
+| Variable | Purpose |
+| --- | --- |
+| `XRAY_TEST_PLAN_KEY` | Link the Test Execution to a Test Plan |
+| `XRAY_TEST_EXECUTION_KEY` | Update an existing Test Execution |
+| `XRAY_TEST_ENVIRONMENT` | Assign a Test Environment |
+| `XRAY_FIX_VERSION` | Assign a Jira fix version |
+| `XRAY_REVISION` | Record the tested revision |
+| `XRAY_TEST_KEYS` | Keys used by feature export |
+| `XRAY_BASE_URL` | Override the default Cloud API v2 URL |
+
+Use `-DryRun` on the export, import, or publish scripts to validate paths, keys, XML, and generated
+URLs without contacting Xray.
+
 ## CI secrets and variables
 
 Configure these outside Git:
@@ -108,6 +156,9 @@ Configure these outside Git:
 | `TOSCA_CI_CLIENT_PATH` | yes | Absolute path to `ToscaCIClient.exe` |
 | `TOSCA_EXECUTION_ENDPOINT` | distributed mode | Remote Execution Service or DEX endpoint |
 | SAP/key-vault credentials | yes | Resolved on the Tosca execution agent |
+| `XRAY_CLIENT_ID` | Xray publishing | Xray Cloud API client ID |
+| `XRAY_CLIENT_SECRET` | Xray publishing | Xray Cloud API client secret |
+| `XRAY_PROJECT_KEY` | Xray publishing | Jira project key |
 
 Use a self-hosted Windows runner with Tosca and SAP client software installed. The hosted validation
 job only validates repository files; it cannot execute Tosca tests.
@@ -118,6 +169,8 @@ job only validates repository files; it cannot execute Tosca tests.
 - [Import and export Tosca subsets](https://docs.tricentis.com/tosca-2026.1/en-us/content/tosca_commander/import_export_subsets.htm)
 - [Run Tosca CI tests through Remote Service](https://docs.tricentis.com/tosca-2026.1/en-us/content/continuous_integration/execution_remote.htm)
 - [Use key-vault secrets](https://docs.tricentis.com/tosca-2026.1/en-us/content/tbox/key_vault_integration.htm)
+- [Xray automation result import examples](https://github.com/Xray-App/xray-code-snippets/tree/main/use_cases/import_automation_results)
+- [Xray Cucumber feature export example](https://github.com/Xray-App/tutorial-java-cucumber/blob/main/export_features_cloud.sh)
 
 ## License
 

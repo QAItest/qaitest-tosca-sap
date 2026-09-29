@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites tests="1" failures="0">
+  <testsuite name="SAP Smoke" tests="1" failures="0">
+    <testcase classname="QAItest.SAP" name="[SAP-001] Login and logout" time="1.25" />
+  </testsuite>
+</testsuites>

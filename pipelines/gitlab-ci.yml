@@ -12,6 +12,8 @@ tosca-sap-tests:
   when: manual
   script:
     - pwsh -File scripts/Invoke-ToscaTests.ps1 -Mode distributed
+  after_script:
+    - pwsh -Command "if ($env:XRAY_CLIENT_ID -and $env:XRAY_CLIENT_SECRET -and $env:XRAY_PROJECT_KEY -and (Test-Path reports/tosca-results.xml)) { ./scripts/Publish-XrayResults.ps1 }"
   artifacts:
     when: always
     reports:

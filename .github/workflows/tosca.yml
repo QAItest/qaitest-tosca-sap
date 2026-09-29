@@ -17,6 +17,20 @@ on:
         default: distributed
         type: choice
         options: [distributed, local]
+      publish_xray:
+        description: Publish Tosca JUnit results to Xray Cloud
+        required: true
+        default: false
+        type: boolean
+      xray_test_keys:
+        description: Optional comma-separated Xray Test keys to export as feature files
+        required: false
+        type: string
+      import_xray_features:
+        description: Synchronize repository feature files into Xray Cloud
+        required: true
+        default: false
+        type: boolean
 
 jobs:
   validate:
@@ -39,8 +53,49 @@ jobs:
           TOSCA_CI_CLIENT_PATH: ${{ vars.TOSCA_CI_CLIENT_PATH }}
           TOSCA_EXECUTION_ENDPOINT: ${{ secrets.TOSCA_EXECUTION_ENDPOINT }}
         run: ./scripts/Invoke-ToscaTests.ps1 -Mode '${{ inputs.mode }}'
+      - name: Publish results to Xray
+        if: always() && inputs.publish_xray
+        shell: pwsh
+        env:
+          XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+          XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+          XRAY_PROJECT_KEY: ${{ vars.XRAY_PROJECT_KEY }}
+          XRAY_TEST_PLAN_KEY: ${{ vars.XRAY_TEST_PLAN_KEY }}
+          XRAY_TEST_ENVIRONMENT: ${{ vars.XRAY_TEST_ENVIRONMENT }}
+          XRAY_REVISION: ${{ github.sha }}
+        run: ./scripts/Publish-XrayResults.ps1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: tosca-sap-results
           path: reports/
+
+  export-xray-features:
+    if: github.event_name == 'workflow_dispatch' && inputs.xray_test_keys != ''
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export Xray feature files
+        shell: pwsh
+        env:
+          XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+          XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+          XRAY_TEST_KEYS: ${{ inputs.xray_test_keys }}
+        run: ./scripts/Export-XrayFeatures.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xray-features
+          path: features/
+
+  import-xray-features:
+    if: github.event_name == 'workflow_dispatch' && inputs.import_xray_features
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import feature files into Xray
+        shell: pwsh
+        env:
+          XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+          XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+          XRAY_PROJECT_KEY: ${{ vars.XRAY_PROJECT_KEY }}
+        run: ./scripts/Import-XrayFeatures.ps1
